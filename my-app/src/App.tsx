@@ -1,38 +1,23 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./App.css";
-import { Role } from "amazon-kinesis-video-streams-webrtc";
-import { Master } from "./components/master";
-import { Viewer } from "./components/viewer";
-import { AvailableUsers } from "./components/availableusers";
-import { useRole } from "./hooks/useRole";
-import { useRegistration } from "./hooks/useRegistration";
-const viewByRole = {
-  MASTER: <Master></Master>,
-  VIEWER: <Viewer></Viewer>,
-  DEFAULT: <></>,
-};
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Default } from "./pages/default";
+import { Chat } from "./pages/chat";
+import { Header } from "./components/header";
+import { SocketProvider } from "./contexts/socketContext";
 
 function App() {
-  const { role } = useRole();
-  const inputRef = useRef<any>();
-  const { regsiterUser, userName } = useRegistration();
-  const onCall = () => {};
-  const onReceive = () => {};
-
   return (
     <div className="App">
-      {userName ? (
-        <AvailableUsers onCall={onCall} onReceive={onReceive}></AvailableUsers>
-      ) : (
-        <></>
-      )}
-      <div>
-        <input type="text" ref={inputRef}></input>
-        <button onClick={() => regsiterUser(inputRef.current.value)}>
-          Register
-        </button>
-      </div>
-      <div>{viewByRole[role]}</div>
+      <Header></Header>
+      <SocketProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Default />} />
+            <Route path="/chat" element={<Chat />} />
+          </Routes>
+        </Router>
+      </SocketProvider>
     </div>
   );
 }

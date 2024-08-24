@@ -8,15 +8,8 @@ import {
 } from "@aws-sdk/client-kinesis-video";
 import * as AWS from "@aws-sdk/client-kinesis-video-signaling";
 
-import {
-  KinesisVideoSignalingClient,
-  GetIceServerConfigCommand,
-} from "@aws-sdk/client-kinesis-video-signaling";
 import { Role, SignalingClient } from "amazon-kinesis-video-streams-webrtc";
-import { GetSessionTokenCommand, STSClient } from "@aws-sdk/client-sts";
-import { SignatureV4 } from "@aws-sdk/signature-v4";
-import { Sha256 } from "@aws-crypto/sha256-browser";
-import { HttpRequest } from "@aws-sdk/protocol-http";
+
 const region = "ap-south-1";
 const service = "kinesisvideo";
 const url =
@@ -35,8 +28,8 @@ export const useWebRTC = (
         const kinesisVideoClient = new KinesisVideoClient({
           region,
           credentials: {
-            accessKeyId: " ",
-            secretAccessKey: " ",
+            accessKeyId: "AKIATCKAO7MXAVNMYKY3",
+            secretAccessKey: "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",
           },
         });
 
@@ -86,8 +79,8 @@ export const useWebRTC = (
         const signaingICEclient = new AWS.KinesisVideoSignaling({
           region,
           credentials: {
-            accessKeyId: " ", // Your AWS Access Key ID
-            secretAccessKey: "", // Your AWS Secret Access Key
+            accessKeyId: "AKIATCKAO7MXAVNMYKY3", // Your AWS Access Key ID
+            secretAccessKey: "KgBAyx/oXnglyIS8oixRBUcTzd0eclvLGzJz2+TQ", // Your AWS Secret Access Key
           },
           endpoint: endpoints["HTTPS"],
         });
@@ -118,8 +111,8 @@ export const useWebRTC = (
           channelEndpoint: endpoints["WSS"],
           systemClockOffset: kinesisVideoClient.config.systemClockOffset,
           credentials: {
-            accessKeyId: " ",
-            secretAccessKey: "",
+            accessKeyId: "AKIATCKAO7MXAVNMYKY3",
+            secretAccessKey: "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",
           },
         });
 

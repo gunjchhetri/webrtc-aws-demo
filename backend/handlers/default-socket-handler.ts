@@ -1,40 +1,40 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import {
-  ApiGatewayManagementApiClient,
-  PostToConnectionCommand,
-  PostToConnectionCommandInput,
-} from "@aws-sdk/client-apigatewaymanagementapi";
+
 import { getActiveConnection, saveConnection } from "../models/connection";
-import { SocketService } from "../services/socket";
+import { SocketEventType, SocketService } from "../services/socket";
 export const handler = async (event: APIGatewayProxyEvent) => {
   console.log("Default route event: ", event.body);
 
   const { connectionId = "" } = event.requestContext;
-  const { type, userName } = JSON.parse(event.body!);
-  const client = new ApiGatewayManagementApiClient({
-    endpoint: process.env.ConnectionUrl!,
-  });
-  if (type == "REGISTER") {
-    await saveConnection(process.env.TableName!, { connectionId, userName });
-    await handlUserRegistration(connectionId!, userName, client);
+  const { type, payload } = JSON.parse(event.body!);
+
+  if (type == SocketEventType.REGISTER) {
+    await saveConnection(process.env.TableName!, {
+      connectionId,
+      userName: payload.userName,
+    });
+    await handlUserRegistration(connectionId!, payload.userName);
   }
-
-  console.log("watitng..", process.env.ConnectionUrl!);
-
+  if (type == SocketEventType.INCOMING_CALL) {
+    await handleIncomingCall(
+      payload.receiverConnectioId,
+      connectionId,
+      payload.channelName
+    );
+  }
   return { statusCode: 200 };
 };
 const handlUserRegistration = async (
-  connecionId: string,
-  userName: string,
-  client: ApiGatewayManagementApiClient
+  connectionId: string,
+  userName: string
 ) => {
   const allConnections = await getActiveConnection(process.env.TableName!);
   const filteredConnections = allConnections.filter(
-    (obj) => obj.userName && obj.connectionId != connecionId
+    (obj) => obj.userName && obj.connectionId != connectionId
   );
   const socketService = new SocketService(process.env.ConnectionUrl!);
   socketService.sendMessage(
-    connecionId,
+    connectionId,
     JSON.stringify({
       type: "AVAILABLE_CONNECTIONS",
       allConnections: filteredConnections,
@@ -43,8 +43,8 @@ const handlUserRegistration = async (
   await boradcastStatus(
     filteredConnections,
     JSON.stringify({
-      newConnection: { connecionId, userName },
-      type: "NEW_CONNECTION",
+      newConnection: { connectionId, userName },
+      type: SocketEventType.NEW_CONNECTION,
     })
   );
 };
@@ -57,4 +57,16 @@ const boradcastStatus = async (allConnections: Array<any>, message: string) => {
         .catch((err) => console.log("Destroyed connection", connecttion));
     }
   }
+};
+const handleIncomingCall = async (
+  receiverConnectioId: string,
+  senderConectionId: string,
+  channelName: string
+) => {
+  const socketService = new SocketService(process.env.ConnectionUrl!);
+  const message = {
+    incomingCall: { connectionId: senderConectionId, channelName },
+    type: SocketEventType.INCOMING_CALL,
+  };
+  await socketService.sendMessage(receiverConnectioId, JSON.stringify(message));
 };
