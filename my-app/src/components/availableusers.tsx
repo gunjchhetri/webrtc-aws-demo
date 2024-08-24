@@ -1,22 +1,19 @@
-import { useSocket } from "../hooks/useSocket";
-import { CallStatus } from "./callstatus";
-type UserProps = {
-  onCall: Function;
-  onReceive: Function;
+import { useSocket } from "../contexts/socketContext";
+type AvailableProps = {
+  makeCall: (conectionId: string) => void;
 };
-export const AvailableUsers = ({ onCall, onReceive }: UserProps) => {
+export const AvailableUsers = ({ makeCall }: AvailableProps) => {
   const { availableUsers } = useSocket();
+
   console.log("availableUsers", availableUsers);
   return availableUsers.length ? (
     <>
       {availableUsers.map((obj) => (
         <div>
           <strong>{obj.userName}</strong>
-          <CallStatus
-            onCall={onCall}
-            onReceive={onReceive}
-            connectionId={obj.connectionId}
-          ></CallStatus>
+          <button onClick={() => makeCall(obj.connectionId)}>
+            Make a call
+          </button>
         </div>
       ))}
     </>

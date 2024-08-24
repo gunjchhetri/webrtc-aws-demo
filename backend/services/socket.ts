@@ -3,7 +3,13 @@ import {
   PostToConnectionCommand,
   PostToConnectionCommandInput,
 } from "@aws-sdk/client-apigatewaymanagementapi";
-
+export enum SocketEventType {
+  INCOMING_CALL = "INCOMING_CALL",
+  NEW_CONNECTION = "NEW_CONNECTION",
+  AVAILABLE_CONNECTIONS = "AVAILABLE_CONNECTIONS",
+  REGISTER = "REGISTER",
+  MAKE_CALL = "MAKE_CALL",
+}
 export class SocketService {
   _socketClient: ApiGatewayManagementApiClient;
   constructor(url: string) {
@@ -11,6 +17,7 @@ export class SocketService {
       endpoint: url,
     });
   }
+
   sendMessage = async (connectionId: string, message: string) => {
     const params: PostToConnectionCommandInput = {
       ConnectionId: connectionId,
